@@ -888,6 +888,7 @@
         function showProfile(language) {
             document.getElementById('languageSelector').style.display = 'none';
 
+
             // 多语言输入区内容
             const inputLang = {
                 zh: {
@@ -964,14 +965,31 @@
             `;
             updateBackButtonText(language);
             
-            // 推荐写法：明确选中按钮类名，避免误伤其他a标签
-            document.querySelectorAll('.profile-card-link, .profile-card-link-mini').forEach(link => {
-                const text = link.getAttribute(`data-lang-${language}`) || link.textContent;
-                link.textContent = text;
-            });
-
+            // 确保DOM更新完成后再更新按钮文本
+            setTimeout(() => {
+                // 更新所有跳转按钮的文本
+                updateAllLinkTexts(language);
+            }, 100);
+            
             initAccordions();
+        }
 
+        // 新增一个函数来更新所有链接按钮的文本
+        function updateAllLinkTexts(language) {
+            // 更新所有类型的跳转链接
+            const selectors = [
+                '.profile-card-link',
+                '.profile-card-link-mini'
+            ];
+            
+            selectors.forEach(selector => {
+                document.querySelectorAll(selector).forEach(link => {
+                    const dataAttr = `data-lang-${language}`;
+                    if (link.hasAttribute(dataAttr)) {
+                        link.textContent = link.getAttribute(dataAttr);
+                    }
+                });
+            });
         }
 
         async function submitRedeem() {
