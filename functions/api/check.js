@@ -2,7 +2,6 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // 只处理 POST 请求到 /api/check
     if (url.pathname === '/api/check' && request.method === 'POST') {
       try {
         const { code } = await request.json();
@@ -16,11 +15,9 @@ export default {
 
         const normalizedCode = code.trim().toUpperCase();
 
-        // 从 KV 查找这个码
         const value = await env.CODES.get(normalizedCode);
 
         if (value) {
-          // 找到！返回真实内容
           const data = JSON.parse(value);
           return new Response(
             JSON.stringify({
@@ -29,7 +26,6 @@ export default {
             { headers: { 'Content-Type': 'application/json' } }
           );
         } else {
-          // 没找到，返回随机假码（防枚举攻击！）
           const fakeCode = 'FAKE' + Math.random().toString(36).substring(2, 10).toUpperCase();
           return new Response(
             JSON.stringify({
@@ -46,7 +42,6 @@ export default {
       }
     }
 
-    // 其他请求返回 404
     return new Response('Not Found', { status: 404 });
   }
 };
