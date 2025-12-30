@@ -887,25 +887,24 @@
         // 显示个人资料页面（优化版：恢复所有手风琴 + 修改文案）
         // 显示个人资料页面
         function showProfile(language) {
+            // 隐藏语言选择器，显示个人主页
             document.getElementById('languageSelector').style.display = 'none';
-
-            // 1. 定义内部 UI 的多语言配置（移码按钮等）
-            const inputLang = {
-                zh: { title: '请输入文字', btn: '移码', placeholder: '...' },
-                'zh-tw': { title: '請輸入文字', btn: '移碼', placeholder: '...' },
-                en: { title: 'Please enter text', btn: 'FrameShift', placeholder: '...' },
-                ja: { title: '文字を入力してください', btn: 'フレームシフト', placeholder: '...' }
-            };
-
-            const langInput = inputLang[language] || inputLang.zh;
             const profileContainer = document.getElementById('profileContainer');
-            
-            // 显示容器
             profileContainer.style.display = 'flex';
-            void profileContainer.offsetWidth; // 触发重绘以实现动画
+            void profileContainer.offsetWidth; // 触发重排以执行动画
             profileContainer.classList.add('show');
 
-            // 2. 更新动态区域内容（移码框和简介）
+            // 多语言输入区配置
+            const inputLangMap = {
+                'zh': { title: '请输入文字', btn: '移码', placeholder: '...' },
+                'zh-tw': { title: '請輸入文字', btn: '移碼', placeholder: '...' },
+                'en': { title: 'Please enter text', btn: 'FrameShift', placeholder: '...' },
+                'ja': { title: '文字を入力してください', btn: 'フレームシフト', placeholder: '...' }
+            };
+
+            const langInput = inputLangMap[language] || inputLangMap['zh'];
+
+            // 更新动态区域 (Redeem区 + 个人简介)
             document.getElementById('profileContent').innerHTML = `
                 <div class="text-center py-6 max-w-2xl mx-auto">
                     <h2 class="text-3xl font-bold mb-10 inline-block text-white" 
@@ -914,22 +913,45 @@
                     </h2>
                     <div class="max-w-lg mx-auto">
                         <input type="text" id="redeemCode" placeholder="${langInput.placeholder}" 
-                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl mb-6 shadow-lg">
+                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-400 mb-6 shadow-lg">
                         <br>
                         <button onclick="submitRedeem()" 
-                            class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl shadow-lg transition-all duration-500">
+                                class="w-full px-8 py-4 bg-gradient-to-r from-purple-400 to-purple-600 text-white text-xl font-bold rounded-xl shadow-lg transition-all duration-300 hover:scale-105">
                             ${langInput.btn}
                         </button>
                     </div>
                     <div id="redeemResult" class="mt-10 text-xl min-h-24 px-4"></div>
                 </div>
-                ${profileConfig.bio[language]}
+                ${profileConfig.bio[language] || profileConfig.bio['zh']}
             `;
 
-            // 3. 执行更新：返回按钮、Unifans 卡片按钮
-            updateBackButtonText(language);
-            updateAllLinkTexts(language); // 确保这里被调用
+            // 执行全局语言属性更新 (返回按钮 + 所有跳转链接)
+            updateGlobalElementsLanguage(language);
+            
+            // 初始化手风琴
             initAccordions();
+        }
+
+        function updateGlobalElementsLanguage(language) {
+            // 定义需要根据 data-lang 属性更新的所有元素选择器
+            const targetSelectors = [
+                '#backButton',             // 返回按钮
+                '.profile-card-link',      // 大卡片链接
+                '.profile-card-link-mini'  // 小卡片链接
+            ];
+
+            targetSelectors.forEach(selector => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => {
+                    // 拼接属性名，例如 data-lang-en
+                    const attrName = `data-lang-${language}`;
+                    const translatedText = el.getAttribute(attrName);
+                    
+                    if (translatedText) {
+                        el.textContent = translatedText;
+                    }
+                });
+            });
         }
 
         // 统一更新所有卡片链接文字的函数
