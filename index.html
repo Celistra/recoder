@@ -546,7 +546,7 @@
             <p>你也可以添加网址，例如：<a href="https://www.example.com" target="_blank">https://www.example.com</a>，它会自动变成可点击的链接。</p>
         </div>
         <div class="profile-card">
-            <img src="Cel.jpg" alt="Celistria" class="profile-card-avatar">
+            <img src="https://avatars.githubusercontent.com/Celistra" alt="Celistria" class="profile-card-avatar">
             <div class="profile-card-info">
                 <h2 class="profile-card-name">Celistria</h2>
                 <a href="https://app.unifans.io/c/celistria" target="_blank" class="profile-card-link" data-lang-zh="点击跳转至Celistria的Unifans" data-lang-zh-tw="點擊跳轉至Celistria的Unifans" data-lang-en="Click to visit Celistria's Unifans" data-lang-ja="CelistriaのUnifansを訪問するにはクリック">点击跳转至Celistria的Unifans</a>
@@ -587,7 +587,7 @@
     <script>
         // 个人信息配置
         const profileConfig = {
-            avatar: "Cel.jpg", // 使用GitHub根目录的Cel.jpg图片文件
+            avatar: "https://avatars.githubusercontent.com/Celistra", // 使用GitHub头像URL
             name: {
                 zh: "Celistria",
                 "zh-tw": "Celistria",
@@ -879,6 +879,29 @@
             });
         });
 
+        // 多语言文本配置
+        const languageTexts = {
+            zh: {
+                inputTitle: "请输入文字",
+                inputPlaceholder: "请在此处输入Mega链接",
+                buttonText: "移码"
+            },
+            "zh-tw": {
+                inputTitle: "請輸入文字",
+                inputPlaceholder: "請在此處輸入Mega鏈接",
+                buttonText: "移碼"
+            },
+            en: {
+                inputTitle: "Please Enter Text",
+                inputPlaceholder: "Please enter Mega link here",
+                buttonText: "Shift Code"
+            },
+            ja: {
+                inputTitle: "テキストを入力してください",
+                inputPlaceholder: "ここにMegaリンクを入力してください",
+                buttonText: "移碼"
+            }
+        };
 
         // 显示个人资料页面（优化版：恢复所有手风琴 + 修改文案）
         function showProfile(language) {
@@ -889,6 +912,9 @@
             void profileContainer.offsetWidth;
             profileContainer.classList.add('show');
             
+            // 获取当前语言的文本配置
+            const texts = languageTexts[language] || languageTexts.zh;
+            
             // 上方：输入框区域
             document.getElementById('profileContent').innerHTML = `
                 <div class="text-center py-6 max-w-2xl mx-auto">
@@ -898,7 +924,7 @@
                                transition: all 0.4s ease;"
                         onmouseover="this.style.transform='scale(1.08)'; this.style.textShadow='0 0 18px rgba(192, 132, 252, 1)'"
                         onmouseout="this.style.transform='scale(1)'; this.style.textShadow='0 0 8px rgba(192, 132, 252, 0.8)'">
-                        请输入文字
+                        ${texts.inputTitle}
                     </h2>
                     
                     <div class="max-w-lg mx-auto">
@@ -906,7 +932,7 @@
                         <input 
                             type="text" 
                             id="redeemCode" 
-                            placeholder="" 
+                            placeholder="${texts.inputPlaceholder}" 
                             class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6 shadow-lg transition-all duration-300"
                             autocomplete="off"
                             onmouseover="this.style.boxShadow='0 0 20px rgba(192, 132, 252, 0.6)'"
@@ -921,7 +947,7 @@
                             onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 25px rgba(192, 132, 252, 0.6)'"
                             onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 25px rgba(192, 132, 252, 0.3)'"
                         >
-                            移码
+                            ${texts.buttonText}
                         </button>
                     </div>
                     
@@ -973,35 +999,4 @@
                     resultDiv.innerHTML = `
                         <div class="bg-green-900 bg-opacity-50 border-2 border-green-400 rounded-xl p-6">
                             <p class="text-2xl font-bold text-green-300 mb-4">输出：（true</p>
-                            <p class="text-lg leading-relaxed">${data.message.replace(/\\n/g, '<br>')}</p>
-                        </div>
-                    `;
-                } else {
-                    const fake = 'FAKE' + Math.random().toString(36).substring(2, 8).toUpperCase();
-                    resultDiv.innerHTML = `
-                        <div class="bg-red-900 bg-opacity-50 border-2 border-red-400 rounded-xl p-6">
-                            <p class="text-2xl font-bold text-red-300 mb-4">输出：（wrong</p>
-                            <p class="text-lg">${fake}</p>
-                        </div>
-                    `;
-                }
-            } catch (e) {
-                resultDiv.innerHTML = `<span style="color:#ff6b6b;">网络错误，请刷新重试，若持续出现该错误请通知作者</span>`;
-            }
-        }
-
-        // 将文本中的URL转换为可点击链接
-        function convertUrlsToLinks() {
-            const content = document.getElementById('profileContent');
-            const text = content.innerHTML;
-            
-            // 简单的URL检测正则表达式
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            
-            // 不需要再次转换，因为我们已经在bio中设置了链接
-            // 这段代码保留以备将来使用，如果你想动态添加文本而不是在配置中设置
-        }
-    </script>
-</body>
-</html>
-
+                            <p class="text-lg leading-relaxed">${data
