@@ -1139,8 +1139,8 @@ However, if you are visiting here for the first time, before proceeding to our U
             });
         });
 
-        // 显示个人资料页面
-        // 显示个人资料页面（重做版）
+
+        // 显示个人资料页面（优化版：恢复所有手风琴 + 修改文案）
         function showProfile(language) {
             document.getElementById('languageSelector').style.display = 'none';
             
@@ -1149,17 +1149,17 @@ However, if you are visiting here for the first time, before proceeding to our U
             void profileContainer.offsetWidth;
             profileContainer.classList.add('show');
             
-            // === 新增：兑换码输入区域 ===
+            // 上方：输入框区域（只改文案）
             document.getElementById('profileContent').innerHTML = `
                 <div class="text-center py-8">
-                    <h2 class="text-3xl font-bold mb-8 text-var(--primary-color)">请输入你的专属兑换码</h2>
+                    <h2 class="text-3xl font-bold mb-8" style="color: var(--primary-color);">请输入链接</h2>
                     
                     <div class="max-w-md mx-auto">
                         <input 
                             type="text" 
                             id="redeemCode" 
                             placeholder="例如：SWIFT2025" 
-                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6"
+                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6 shadow-lg"
                             autocomplete="off"
                         >
                         <br>
@@ -1167,18 +1167,21 @@ However, if you are visiting here for the first time, before proceeding to our U
                             onclick="submitRedeem()" 
                             class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl hover:transform hover:scale-105 transition-all duration-300 shadow-lg"
                         >
-                            验证并获取专属内容
+                            移码
                         </button>
                     </div>
                     
                     <div id="redeemResult" class="mt-10 text-xl min-h-24"></div>
                 </div>
+
+                <!-- 下面恢复所有原版手风琴内容 -->
+                ${profileConfig.bio[language]}
             `;
             
             // 更新返回按钮文本
             updateBackButtonText(language);
             
-            // 初始化手风琴功能（保留原所有展开栏）
+            // 初始化手风琴功能（关键！让所有折叠框能点开）
             initAccordions();
         }
 
