@@ -1151,21 +1151,21 @@ However, if you are visiting here for the first time, before proceeding to our U
             
             // 上方：输入框区域（只改文案）
             document.getElementById('profileContent').innerHTML = `
-                <div class="text-center py-8">
-                    <h2 class="text-3xl font-bold mb-8" style="color: var(--primary-color);">请输入链接</h2>
+                <div class="text-center py-5"> 
+                    <h2 class="text-3xl font-bold mb-10" style="color: var(--primary-color);">请输入链接</h2>
                     
-                    <div class="max-w-md mx-auto">
+                    <div class="max-w-sm mx-auto">  
                         <input 
                             type="text" 
                             id="redeemCode" 
-                            placeholder="例如：SWIFT2025" 
-                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6 shadow-lg"
+                            placeholder=""
+                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6 shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105"
                             autocomplete="off"
                         >
                         <br>
                         <button 
                             onclick="submitRedeem()" 
-                            class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl hover:transform hover:scale-105 transition-all duration-300 shadow-lg"
+                            class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-110"
                         >
                             移码
                         </button>
