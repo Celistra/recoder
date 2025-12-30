@@ -913,12 +913,13 @@
                 }
             };
 
+            const langInput = inputLang[language] || inputLang.zh;
+
             const profileContainer = document.getElementById('profileContainer');
             profileContainer.style.display = 'flex';
             void profileContainer.offsetWidth;
             profileContainer.classList.add('show');
 
-            // 设置新的HTML内容
             document.getElementById('profileContent').innerHTML = `
                 <div class="text-center py-6 max-w-2xl mx-auto">
                     <h2 class="text-3xl font-bold mb-10 inline-block text-white" 
@@ -962,26 +963,10 @@
                 </div>
                 ${profileConfig.bio[language]}
             `;
-            
-            // 更新返回按钮文本
             updateBackButtonText(language);
-            
-            // 等待DOM更新完成后更新所有链接文本
-            setTimeout(() => {
-                // 更新所有跳转链接按钮的文本
-                document.querySelectorAll('.profile-card-link, .profile-card-link-mini').forEach(link => {
-                    const dataAttr = `data-lang-${language}`;
-                    if (link.hasAttribute(dataAttr)) {
-                        const newText = link.getAttribute(dataAttr);
-                        if (newText) {
-                            link.textContent = newText;
-                        }
-                    }
-                });
-                
-                // 初始化手风琴
-                initAccordions();
-            }, 100);
+            updateAllLinkTexts(language);
+            initAccordions();
+
         }
 
         // 新增一个函数来更新所有链接按钮的文本
