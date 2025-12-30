@@ -885,105 +885,68 @@
 
 
         // 显示个人资料页面（优化版：恢复所有手风琴 + 修改文案）
+        // 显示个人资料页面
         function showProfile(language) {
             document.getElementById('languageSelector').style.display = 'none';
 
-
-            // 多语言输入区内容
+            // 1. 定义内部 UI 的多语言配置（移码按钮等）
             const inputLang = {
-                zh: {
-                    title: '请输入文字',
-                    btn: '移码',
-                    placeholder: '...'
-                },
-                'zh-tw': {
-                    title: '請輸入文字',
-                    btn: '移碼',
-                    placeholder: '...'
-                },
-                en: {
-                    title: 'Please enter text',
-                    btn: 'FrameShift',
-                    placeholder: '...'
-                },
-                ja: {
-                    title: '文字を入力してください',
-                    btn: 'フレームシフト',
-                    placeholder: '...'
-                }
+                zh: { title: '请输入文字', btn: '移码', placeholder: '...' },
+                'zh-tw': { title: '請輸入文字', btn: '移碼', placeholder: '...' },
+                en: { title: 'Please enter text', btn: 'FrameShift', placeholder: '...' },
+                ja: { title: '文字を入力してください', btn: 'フレームシフト', placeholder: '...' }
             };
 
             const langInput = inputLang[language] || inputLang.zh;
-
             const profileContainer = document.getElementById('profileContainer');
+            
+            // 显示容器
             profileContainer.style.display = 'flex';
-            void profileContainer.offsetWidth;
+            void profileContainer.offsetWidth; // 触发重绘以实现动画
             profileContainer.classList.add('show');
 
+            // 2. 更新动态区域内容（移码框和简介）
             document.getElementById('profileContent').innerHTML = `
                 <div class="text-center py-6 max-w-2xl mx-auto">
                     <h2 class="text-3xl font-bold mb-10 inline-block text-white" 
-                        style="text-shadow: 0 0 8px rgba(192, 132, 252, 0.8); transition: all 0.4s ease;"
-                        onmouseover="this.style.transform='scale(1.08)'; this.style.textShadow='0 0 18px rgba(192, 132, 252, 1)'"
-                        onmouseout="this.style.transform='scale(1)'; this.style.textShadow='0 0 8px rgba(192, 132, 252, 0.8)'">
+                        style="text-shadow: 0 0 8px rgba(192, 132, 252, 0.8);">
                         ${langInput.title}
                     </h2>
                     <div class="max-w-lg mx-auto">
-                        <input 
-                            type="text" 
-                            id="redeemCode" 
-                            placeholder="${langInput.placeholder}" 
-                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6 shadow-lg transition-all duration-300"
-                            autocomplete="off"
-                            onmouseover="this.style.boxShadow='0 0 20px rgba(192, 132, 252, 0.6)'"
-                            onmouseout="this.style.boxShadow='0 4px 15px rgba(0,0,0,0.2)'"
-                        >
+                        <input type="text" id="redeemCode" placeholder="${langInput.placeholder}" 
+                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl mb-6 shadow-lg">
                         <br>
-                        <button 
-                            onclick="submitRedeem()" 
-                            class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl shadow-lg transition-all duration-500"
-                            style="text-shadow: 0 0 10px rgba(192, 132, 252, 0.9);"
-                            onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 25px rgba(192, 132, 252, 0.6)'"
-                            onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 25px rgba(192, 132, 252, 0.3)'"
-                        >
+                        <button onclick="submitRedeem()" 
+                            class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl shadow-lg transition-all duration-500">
                             ${langInput.btn}
                         </button>
                     </div>
-                    <div id="redeemResult" class="mt-10 text-xl min-h-24 px-4">
-                        <style>
-                            #redeemResult p {
-                                transition: all 0.3s ease !important;
-                            }
-                            #redeemResult p:hover {
-                                transform: none !important;
-                                text-shadow: 0 0 15px rgba(192, 132, 252, 1) !important;
-                            }
-                        </style>
-                    </div>
+                    <div id="redeemResult" class="mt-10 text-xl min-h-24 px-4"></div>
                 </div>
                 ${profileConfig.bio[language]}
             `;
-            updateBackButtonText(language);
-            updateAllLinkTexts(language);
-            initAccordions();
 
+            // 3. 执行更新：返回按钮、Unifans 卡片按钮
+            updateBackButtonText(language);
+            updateAllLinkTexts(language); // 确保这里被调用
+            initAccordions();
         }
 
-        // 新增一个函数来更新所有链接按钮的文本
+        // 统一更新所有卡片链接文字的函数
         function updateAllLinkTexts(language) {
-            // 更新所有类型的跳转链接
-            const selectors = [
-                '.profile-card-link',
-                '.profile-card-link-mini'
-            ];
+            // 选取大卡片按钮和小卡片按钮
+            const allLinks = document.querySelectorAll('.profile-card-link, .profile-card-link-mini');
             
-            selectors.forEach(selector => {
-                document.querySelectorAll(selector).forEach(link => {
-                    const dataAttr = `data-lang-${language}`;
-                    if (link.hasAttribute(dataAttr)) {
-                        link.textContent = link.getAttribute(dataAttr);
-                    }
-                });
+            allLinks.forEach(link => {
+                const attrName = `data-lang-${language}`;
+                const newText = link.getAttribute(attrName);
+                
+                if (newText) {
+                    link.textContent = newText;
+                } else {
+                    // 如果没找到对应语言，回退到中文简体作为兜底
+                    link.textContent = link.getAttribute('data-lang-zh');
+                }
             });
         }
 
