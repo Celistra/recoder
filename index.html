@@ -3,85 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>兑换码验证系统</title>
+    <title>兑换码验证</title>
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-        }
-        .container {
-            background: rgba(255,255,255,0.1);
-            padding: 40px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-        }
-        input {
-            padding: 15px;
-            width: 80%;
-            margin: 20px 0;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-        }
-        button {
-            padding: 15px 30px;
-            background: #fff;
-            color: #667eea;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        #result {
-            margin-top: 30px;
-            font-size: 20px;
-            min-height: 60px;
-        }
+        body { font-family: Arial; text-align: center; padding: 50px; background: #f0f0f0; }
+        input { padding: 10px; font-size: 18px; width: 300px; }
+        button { padding: 10px 20px; font-size: 18px; margin-top: 20px; }
+        #result { margin-top: 30px; font-size: 20px; min-height: 50px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>请输入兑换码</h1>
-        <input type="text" id="code" placeholder="例如：TEST123" autocomplete="off">
-        <br>
-        <button onclick="checkCode()">验证</button>
-        <div id="result">等待输入兑换码...</div>
-    </div>
+    <h1>请输入兑换码</h1>
+    <input type="text" id="code" placeholder="例如：TEST123">
+    <button onclick="check()">验证</button>
+    <div id="result">等待输入...</div>
 
     <script>
-        async function checkCode() {
+        async function check() {
             const code = document.getElementById('code').value.trim().toUpperCase();
-            const resultDiv = document.getElementById('result');
-            
+            const result = document.getElementById('result');
             if (!code) {
-                resultDiv.innerHTML = "<span style='color:#ff6b6b'>请输入兑换码！</span>";
+                result.innerHTML = "请输入兑换码";
                 return;
             }
-
-            resultDiv.innerHTML = "验证中，请稍等...";
-
+            result.innerHTML = "验证中...";
             try {
-                const response = await fetch('/api/check', {
+                const res = await fetch('/api/check', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({code})
                 });
-
-                const data = await response.json();
-                resultDiv.innerHTML = data.message;
-            } catch (error) {
-                resultDiv.innerHTML = "<span style='color:#ff6b6b'>网络错误，请刷新重试</span>";
+                const data = await res.json();
+                result.innerHTML = data.message;
+            } catch (e) {
+                result.innerHTML = "网络错误，请刷新重试<br>（如果反复出错，请联系我）";
             }
         }
     </script>
