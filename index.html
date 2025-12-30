@@ -963,6 +963,12 @@
                 ${profileConfig.bio[language]}
             `;
             updateBackButtonText(language);
+            
+            document.querySelectorAll('a[data-lang-zh]').forEach(link => {
+                const text = link.getAttribute(`data-lang-${language}`) || link.textContent;
+                link.textContent = text;
+            });
+
             initAccordions();
         }
 
@@ -1014,6 +1020,7 @@
     </script>
 </body>
 </html>
+
 
 
 
