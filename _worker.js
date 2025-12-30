@@ -37,7 +37,7 @@ export default {
           });
         }
 
-        // 提取 Mega 尾部（更宽松正则）
+        // 提取 Mega 尾部（/file/ 后全部）
         const megaRegex = /^https?:\/\/mega\.nz\/file\/(.+)$/i;
         const match = input.match(megaRegex);
 
@@ -47,14 +47,11 @@ export default {
         let isMegaFail = false;
 
         if (match) {
-          // 是 Mega 链接，提取完整尾部
-          const originalTail = match[1];  // 如 oCV0kLbA#NMZFFqz1l8RjQa3Jm5CCrb_sykT2d_CrpMibGdoq7qk
+          // 整个尾部（你的定义）
+          const originalTail = match[1];  // oCV0kLbA#NMZFFqz1l8RjQa3Jm5CCrb_sykT2d_CrpMibGdoq7qk
 
-          // 找 # 位置，提取 key 部分用于哈希
-          const hashPart = originalTail.includes('#') ? originalTail.split('#')[1] : originalTail;
-
-          // 计算哈希
-          const raw = hashPart + SECRET_SALT;
+          // 用整个尾部 + 盐 计算哈希（关键改这里！）
+          const raw = originalTail + SECRET_SALT;
           const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
           const hashArray = Array.from(new Uint8Array(hashBuffer));
           const hashedKey = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
@@ -64,21 +61,18 @@ export default {
           let newTail;
           if (value) {
             const data = JSON.parse(value);
-            newTail = data.newTail;  // 你预设的完整尾部
+            newTail = data.newTail;  // 你的预设尾部
           } else {
-            // 生成固定假尾部（基于原完整尾部）
             newTail = fixedScrambleTail(originalTail);
             isMegaFail = true;
           }
 
-          // 固定头部 + 新尾部
           result = `https://mega.nz/file/${newTail}`;
         } else {
-          // 非 Mega → 固定相关串
           result = fixedRelatedString(input);
         }
 
-        // 更新失败计数（仅 Mega 不匹配）
+        // 失败计数
         if (isMegaFail) {
           let failCount = parseInt((await env.KEY_RECODER.get(ipKey)) || '0');
           failCount++;
@@ -107,7 +101,7 @@ export default {
   }
 };
 
-// 固定假尾部生成（相同输入永远相同）
+// 假尾部固定生成（相同输入相同输出）
 function fixedScrambleTail(originalTail) {
   let chars = originalTail.split('');
   let seed = 0;
@@ -124,7 +118,7 @@ function fixedScrambleTail(originalTail) {
     [chars[i], chars[j]] = [chars[j], chars[i]];
   }
 
-  // 大小写翻转
+  // 大小写
   chars = chars.map(c => {
     if (c.match(/[a-zA-Z]/) && rand() < 0.5) {
       return c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase();
@@ -132,7 +126,7 @@ function fixedScrambleTail(originalTail) {
     return c;
   });
 
-  // 固定增减字符
+  // 增减字符
   const change = Math.floor(rand() * 7) - 3;
   const extraChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-#';
   if (change > 0) {
@@ -146,7 +140,7 @@ function fixedScrambleTail(originalTail) {
   return chars.join('');
 }
 
-// 非 Mega 固定串
+// 非 Mega
 function fixedRelatedString(input) {
   let base = input.toUpperCase().replace(/[^A-Z0-9]/g, '') || 'X';
   let seed = 0;
