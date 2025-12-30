@@ -16,7 +16,7 @@ export default {
       try {
         const { code } = await request.json();
         if (!code) {
-          return new Response(JSON.stringify({ message: '请输入内容' }), {
+          return new Response(JSON.stringify({ result: '请输入内容' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
@@ -25,91 +25,75 @@ export default {
         const input = code.trim();
         const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
 
-        // IP 限流逻辑
+        // IP 限流（只对 Mega 失败计数）
         const today = new Date().toISOString().slice(0, 10);
         const ipKey = `rate:${clientIP}:${today}`;
         const banKey = `ban:${clientIP}`;
 
         const bannedUntil = await env.KEY_RECODER.get(banKey);
-        if (bannedUntil) {
-          const untilDate = new Date(bannedUntil);
-          if (new Date() < untilDate) {
-            return new Response(JSON.stringify({
-              message: '您今天已经尝试了250回，因此此功能暂时在一周内被限制无法使用，如果有问题请私聊管理员'
-            }), {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            });
-          } else {
-            await env.KEY_RECODER.delete(banKey);
-          }
+        if (bannedUntil && new Date() < new Date(bannedUntil)) {
+          return new Response(JSON.stringify({ result: '您今天已经尝试了250回，因此此功能暂时在一周内被限制无法使用，如果有问题请私聊管理员' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
         }
 
-        let failCount = parseInt((await env.KEY_RECODER.get(ipKey)) || '0');
-
         // 判断是否 Mega 链接
-        const megaRegex = /^https?:\/\/mega\.nz\/file\/[a-zA-Z0-9]+#[a-zA-Z0-9_-]{43,}$/;
-        const isMega = megaRegex.test(input);
+        const megaRegex = /^https?:\/\/mega\.nz\/file\/([a-zA-Z0-9]+)#([a-zA-Z0-9_-]+)$/i;
+        const match = input.match(megaRegex);
 
-        const SECRET_SALT = "celistria123"; // 尽快改成 env.SECRET_SALT
+        const SECRET_SALT = "celistria123";
 
-        let message = '';
-        let success = false;
+        let result = '';
+        let isMegaFail = false;
 
-        if (isMega) {
+        if (match) {
           // 是 Mega 链接
-          const parts = input.split('#');
-          const originalPrefix = parts[0]; // https://mega.nz/file/oCV0kLbA
-          const originalHash = parts[1]; // NMZFFqz1l8RjQa3Jm5CCrb_sykT2d_CrpMibGdoq7qk
+          const fileId = match[1];        // 如 oCV0kLbA
+          const originalKey = match[2];   // 如 NMZFFqz1l8RjQa3Jm5CCrb_sykT2d_CrpMibGdoq7qk
 
-          // 计算哈希
-          const raw = originalHash + SECRET_SALT;
+          // 计算哈希作为 KV key（只用 # 后面的部分 + 盐）
+          const raw = originalKey + SECRET_SALT;
           const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
           const hashArray = Array.from(new Uint8Array(hashBuffer));
           const hashedKey = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 
           const value = await env.KEY_RECODER.get(hashedKey);
 
-          let newLink;
+          let newTail;
           if (value) {
-            // 匹配 KV → 直接用预设 full link
             const data = JSON.parse(value);
-            newLink = data.content;
-            success = true;
+            newTail = data.newTail;  // 直接用预设尾部，如 kbFjgTSQ#VUEk_...
           } else {
-            // 不匹配 → 基于原尾部生成类似随机尾部
-            const newHash = generateSimilarHash(originalHash);
-            // 随机生成类似前缀（8位 Base64）
-            const randomPrefix = randomString(8, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789');
-            newLink = `https://mega.nz/file/${randomPrefix}#${newHash}`;
-            failCount++;
+            // 生成“伪真实”随机尾部（基于原 key 乱序+变异）
+            newTail = fileId + '#' + scrambleMegaKey(originalKey);
+            isMegaFail = true;
           }
 
-          // 只输出纯链接（无提示）
-          message = newLink;
+          result = `https://mega.nz/file/${newTail}`;
         } else {
-          // 不是 Mega → 基于输入生成类似随机字符串
-          const shuffled = shuffleAndModify(input);
-          // 只输出纯字符串（无提示）
-          message = shuffled;
+          // 非 Mega 输入 → 生成看似相关的随机字符串
+          result = randomRelatedString(input);
         }
 
-        // 更新失败计数（只限 Mega 失败）
-        if (isMega && !success) {
-          await env.KEY_RECODER.put(ipKey, (failCount + 1).toString(), { expirationTtl: 86400 });
+        // 更新失败计数（仅 Mega 不匹配时）
+        if (isMegaFail) {
+          let failCount = parseInt((await env.KEY_RECODER.get(ipKey)) || '0');
+          failCount++;
+          await env.KEY_RECODER.put(ipKey, failCount.toString(), { expirationTtl: 86400 });
 
-          if (failCount + 1 >= 250) {
+          if (failCount >= 250) {
             const banUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
             await env.KEY_RECODER.put(banKey, banUntil.toISOString(), { expirationTtl: 7 * 24 * 3600 });
           }
         }
 
-        return new Response(JSON.stringify({ message }), {
+        return new Response(JSON.stringify({ result }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
 
       } catch (error) {
         console.error(error);
-        return new Response(JSON.stringify({ message: '服务器错误' }), {
+        return new Response(JSON.stringify({ result: '服务器错误' }), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -120,54 +104,41 @@ export default {
   }
 };
 
-// 生成类似尾部：乱序 + 随机增减1-3字符 + 随机大小写
-function generateSimilarHash(original) {
+// 基于原 key 生成相似但假的 Mega key
+function scrambleMegaKey(original) {
   let chars = original.split('');
   // 乱序
   for (let i = chars.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [chars[i], chars[j]] = [chars[j], chars[i]];
   }
-  // 随机增减1-3字符（从原字符池随机取）
-  const change = Math.floor(Math.random() * 3) + 1;
-  if (Math.random() < 0.5) {
-    // 增
+  // 随机大小写
+  chars = chars.map(c => {
+    if (c.match(/[a-zA-Z]/) && Math.random() < 0.5) {
+      return c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase();
+    }
+    return c;
+  });
+  // 随机增减 0-3 个字符
+  const change = Math.floor(Math.random() * 7) - 3;  // -3 到 +3
+  if (change > 0) {
+    const extraChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
     for (let i = 0; i < change; i++) {
-      const randChar = original[Math.floor(Math.random() * original.length)];
-      chars.splice(Math.floor(Math.random() * chars.length), 0, randChar);
+      chars.push(extraChars.charAt(Math.floor(Math.random() * extraChars.length)));
     }
-  } else {
-    // 减（如果长度够）
-    if (chars.length > change) {
-      chars = chars.slice(0, chars.length - change);
-    }
+  } else if (change < 0) {
+    chars = chars.slice(0, change);
   }
-  // 随机大小写
-  chars = chars.map(c => Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase());
   return chars.join('');
 }
 
-// 基于输入乱序 + 加随机后缀 + 随机大小写
-function shuffleAndModify(input) {
-  let chars = input.split('');
-  // 乱序
-  for (let i = chars.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [chars[i], chars[j]] = [chars[j], chars[i]];
-  }
-  // 加随机3-6位后缀
-  const suffix = randomString(Math.floor(Math.random() * 4) + 3, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-');
-  chars.push(...suffix.split(''));
-  // 随机大小写
-  chars = chars.map(c => Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase());
-  return chars.join('');
-}
-
-// 生成随机字符串
-function randomString(length, chars) {
+// 非 Mega 输入生成看似相关的随机串
+function randomRelatedString(input) {
+  const base = input.toUpperCase().replace(/[^A-Z0-9]/g, '') || 'X';
   let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  for (let i = 0; i < 20; i++) {
+    result += base.charAt(Math.floor(Math.random() * base.length));
   }
+  result += '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
   return result;
 }
