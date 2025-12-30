@@ -1,46 +1,65 @@
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (url.pathname === '/api/check' && request.method === 'POST') {
-      // 处理 OPTIONS 预检（解决网络错误关键！）
-      if (request.method === 'OPTIONS') {
-        return new Response(null, { headers: corsHeaders() });
-      }
+    // 处理 CORS 预检请求（解决网络错误的核心！）
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
 
+    // 只处理我们的 API
+    if (url.pathname === '/api/check' && request.method === 'POST') {
       try {
         const { code } = await request.json();
-        const key = code?.trim().toUpperCase();
+        const normalizedCode = code?.trim().toUpperCase() || '';
 
+        if (!normalizedCode) {
+          return new Response(JSON.stringify({ message: '请输入兑换码' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        // 读取 KV（和你绑定完全一致）
         const value = await env.KEY_RECODER.get(normalizedCode);
 
-        const headers = corsHeaders();
-
+        let message;
         if (value) {
           const data = JSON.parse(value);
-          return new Response(JSON.stringify({
-            message: `成功！<br>${data.content}`
-          }), { headers });
+          message = `<strong style="color:#90ee90;">验证成功！</strong><br><br>${data.content}`;
         } else {
-          const fake = 'FAKE' + Math.random().toString(36).substr(2,6).toUpperCase();
-          return new Response(JSON.stringify({
-            message: `无效码<br>示例：${fake}`
-          }), { headers });
+          const fake = 'FAKE' + Math.random().toString(36).substring(2, 8).toUpperCase();
+          message = `<strong style="color:#ffb6c1;">无效的兑换码</strong><br><br>提示：有效码类似 ${fake}`;
         }
-      } catch (e) {
-        return new Response(JSON.stringify({message: "服务器错误"}), { status: 500 });
+
+        return new Response(JSON.stringify({ message }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+
+      } catch (error) {
+        console.error(error);
+        return new Response(JSON.stringify({ message: '服务器错误' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       }
     }
 
-    // 其他请求直接放行到静态文件
-    return fetch(request);
+    // 其他所有请求（包括首页 index.html）直接放行给静态资源
+    // 这一行非常重要！不能少！
+    return env.ASSETS.fetch(request);
   }
 };
 
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json'
   };
