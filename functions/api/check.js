@@ -1,61 +1,47 @@
 export default {
   async fetch(request, env) {
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',  // 允许所有来源（安全因为是公开验证）
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    };
+    const url = new URL(request.url);
 
-    // 处理预检请求（OPTIONS）
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        status: 204,
-        headers: corsHeaders,
-      });
-    }
-
-    // 只允许 POST
-    if (request.method !== 'POST') {
-      return new Response('Method Not Allowed', { status: 405, headers: corsHeaders });
-    }
-
-    try {
-      const { code } = await request.json();
-
-      if (!code || typeof code !== 'string') {
-        return new Response(
-          JSON.stringify({ message: '<span style="color:#ff6b6b">请输入有效的兑换码</span>' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+    if (url.pathname === '/api/check' && request.method === 'POST') {
+      // 处理 OPTIONS 预检（解决网络错误关键！）
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { headers: corsHeaders() });
       }
 
-      const normalizedCode = code.trim().toUpperCase();
+      try {
+        const { code } = await request.json();
+        const key = code?.trim().toUpperCase();
 
-      // 注意：这里必须和你在 Dashboard 绑定的 Variable name 完全一致！
-      const value = await env.KEY_RECODER.get(normalizedCode);
+        const value = await env.KEY_RECODER.get(normalizedCode);
 
-      let message;
+        const headers = corsHeaders();
 
-      if (value) {
-        const data = JSON.parse(value);
-        message = `<strong style="color:#90ee90;">验证成功！</strong><br><br>${data.content || '欢迎使用！'}`;
-      } else {
-        const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const fakeCode = 'RC' + randomPart;
-        message = `<strong style="color:#ffb6c1;">无效的兑换码</strong><br><br>提示：有效码类似 ${fakeCode}`;
+        if (value) {
+          const data = JSON.parse(value);
+          return new Response(JSON.stringify({
+            message: `成功！<br>${data.content}`
+          }), { headers });
+        } else {
+          const fake = 'FAKE' + Math.random().toString(36).substr(2,6).toUpperCase();
+          return new Response(JSON.stringify({
+            message: `无效码<br>示例：${fake}`
+          }), { headers });
+        }
+      } catch (e) {
+        return new Response(JSON.stringify({message: "服务器错误"}), { status: 500 });
       }
-
-      return new Response(
-        JSON.stringify({ message }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-
-    } catch (error) {
-      console.error('API Error:', error);
-      return new Response(
-        JSON.stringify({ message: '<span style="color:#ff6b6b">服务器内部错误，请稍后再试</span>' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
+
+    // 其他请求直接放行到静态文件
+    return fetch(request);
   }
 };
+
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json'
+  };
+}
