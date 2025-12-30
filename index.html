@@ -964,11 +964,11 @@
             `;
             updateBackButtonText(language);
             
-            document.querySelectorAll('a[data-lang-zh]').forEach(link => {
+            // 更新所有带有 data-lang-* 属性的链接文字（包括大卡和小卡的按钮）
+            document.querySelectorAll('a[class*="profile-card-link"]').forEach(link => {
                 const text = link.getAttribute(`data-lang-${language}`) || link.textContent;
                 link.textContent = text;
             });
-
             initAccordions();
         }
 
