@@ -1151,39 +1151,58 @@ However, if you are visiting here for the first time, before proceeding to our U
             
             // 上方：输入框区域（只改文案）
             document.getElementById('profileContent').innerHTML = `
-                <div class="text-center py-6 max-w-2xl mx-auto"> <!-- 缩小整体区域：py-8→py-6, max-w-md→max-w-2xl -->
-                    <h2 class="text-3xl font-bold mb-10 text-var(--primary-color) hover:transform hover:translate-x-2 transition-all duration-300"
-                        style="text-shadow: 0 0 8px rgba(192, 132, 252, 0.8);">
+                <div class="text-center py-6 max-w-2xl mx-auto">
+                    <!-- 标题：悬停放大 + 光晕增强 -->
+                    <h2 class="text-3xl font-bold mb-10 inline-block" 
+                        style="color: var(--primary-color); text-shadow: 0 0 8px rgba(192, 132, 252, 0.8); 
+                               transition: all 0.4s ease;"
+                        onmouseover="this.style.transform='scale(1.1)'; this.style.textShadow='0 0 20px rgba(192, 132, 252, 1)'"
+                        onmouseout="this.style.transform='scale(1)'; this.style.textShadow='0 0 8px rgba(192, 132, 252, 0.8)'">
                         请输入链接
                     </h2>
                     
-                    <div class="max-w-lg mx-auto"> <!-- 进一步收紧输入框宽度 -->
+                    <div class="max-w-lg mx-auto">
+                        <!-- 输入框：无右移，只保留焦点和阴影 -->
                         <input 
                             type="text" 
                             id="redeemCode" 
                             placeholder="" 
-                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6 shadow-lg hover:transform hover:translate-x-1 transition-all duration-300"
+                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6 shadow-lg transition-all duration-300"
                             autocomplete="off"
+                            style="transition: all 0.3s ease;"
+                            onmouseover="this.style.boxShadow='0 0 20px rgba(192, 132, 252, 0.6)'"
+                            onmouseout="this.style.boxShadow='0 4px 15px rgba(0,0,0,0.2)'"
                         >
                         <br>
+                        <!-- 按钮：只放大，无右移 -->
                         <button 
                             onclick="submitRedeem()" 
-                            class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl shadow-lg hover:transform hover:scale-105 hover:translate-x-1 transition-all duration-500"
+                            class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl shadow-lg transition-all duration-500"
                             style="text-shadow: 0 0 10px rgba(192, 132, 252, 0.9);"
+                            onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 0 30px rgba(192, 132, 252, 0.7)'"
+                            onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 25px rgba(192, 132, 252, 0.3)'"
                         >
                             移码
                         </button>
                     </div>
                     
                     <div id="redeemResult" class="mt-10 text-xl min-h-24 px-4">
-                        <!-- 结果文字也会自动继承原 p 标签的悬停动效 -->
+                        <!-- 结果文字继承原阴影增强，但覆盖掉右移 -->
+                        <style>
+                            #redeemResult p {
+                                transition: all 0.3s ease !important;
+                            }
+                            #redeemResult p:hover {
+                                transform: none !important;
+                                text-shadow: 0 0 15px rgba(192, 132, 252, 1) !important;
+                            }
+                        </style>
                     </div>
                 </div>
 
                 <!-- 恢复所有原版手风琴内容 -->
                 ${profileConfig.bio[language]}
-            `;
-            
+            `;            
             // 更新返回按钮文本
             updateBackButtonText(language);
             
