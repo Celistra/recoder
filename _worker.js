@@ -32,7 +32,7 @@ export default {
 
         const bannedUntil = await env.KEY_RECODER.get(banKey);
         if (bannedUntil && new Date() < new Date(bannedUntil)) {
-          return new Response(JSON.stringify({ result: '您今天已经尝试了250回，因此此功能暂时在一周内被限制无法使用，如果有问题请私聊管理员' }), {
+          return new Response(JSON.stringify({ result: '您今天已经尝试了250回，因此此功能暂时在一天内被限制无法使用，如果有问题请私聊管理员' }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
         }
@@ -79,8 +79,8 @@ export default {
           await env.KEY_RECODER.put(ipKey, failCount.toString(), { expirationTtl: 86400 });
 
           if (failCount >= 250) {
-            const banUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-            await env.KEY_RECODER.put(banKey, banUntil.toISOString(), { expirationTtl: 7 * 24 * 3600 });
+            const banUntil = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
+            await env.KEY_RECODER.put(banKey, banUntil.toISOString(), { expirationTtl: 1 * 24 * 3600 });
           }
         }
 
