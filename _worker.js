@@ -29,10 +29,26 @@ export default {
           });
         }
 
-        const normalizedCode = code.trim().toUpperCase();
+        const input = code.trim();
 
-        // 用你的KV名 KEY_RECODER
-        const value = await env.KEY_RECODER.get(normalizedCode);
+        // 只有你知道的“盐”，随便改，别告诉任何人
+        const SECRET_SALT = "celistria123";
+
+        // 把输入 + 盐 组合
+        const raw = input + SECRET_SALT;
+
+        // 计算 SHA-256
+        const hashBuffer = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(raw)
+        );
+
+        // 转成 hex 字符串
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashedKey = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+
+        // 用 hash 去查 KV
+        const value = await env.KEY_RECODER.get(hashedKey);
 
         let message;
         if (value) {
