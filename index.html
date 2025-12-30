@@ -546,7 +546,7 @@
             <p>你也可以添加网址，例如：<a href="https://www.example.com" target="_blank">https://www.example.com</a>，它会自动变成可点击的链接。</p>
         </div>
         <div class="profile-card">
-            <img src="https://avatars.githubusercontent.com/Celistra" alt="Celistria" class="profile-card-avatar">
+            <img src="Cel.jpg" alt="Celistria" class="profile-card-avatar">
             <div class="profile-card-info">
                 <h2 class="profile-card-name">Celistria</h2>
                 <a href="https://app.unifans.io/c/celistria" target="_blank" class="profile-card-link" data-lang-zh="点击跳转至Celistria的Unifans" data-lang-zh-tw="點擊跳轉至Celistria的Unifans" data-lang-en="Click to visit Celistria's Unifans" data-lang-ja="CelistriaのUnifansを訪問するにはクリック">点击跳转至Celistria的Unifans</a>
@@ -587,7 +587,7 @@
     <script>
         // 个人信息配置
         const profileConfig = {
-            avatar: "https://avatars.githubusercontent.com/Celistra", // 使用GitHub头像URL
+            avatar: "https://raw.githubusercontent.com/Celistra/recoder/main/Cel.jpg", // 使用GitHub仓库Celistra/recoder的Cel.jpg
             name: {
                 zh: "Celistria",
                 "zh-tw": "Celistria",
@@ -879,67 +879,61 @@
             });
         });
 
-        // 多语言文本配置
-        const languageTexts = {
-            zh: {
-                inputTitle: "请输入文字",
-                inputPlaceholder: "请在此处输入Mega链接",
-                buttonText: "移码"
-            },
-            "zh-tw": {
-                inputTitle: "請輸入文字",
-                inputPlaceholder: "請在此處輸入Mega鏈接",
-                buttonText: "移碼"
-            },
-            en: {
-                inputTitle: "Please Enter Text",
-                inputPlaceholder: "Please enter Mega link here",
-                buttonText: "Shift Code"
-            },
-            ja: {
-                inputTitle: "テキストを入力してください",
-                inputPlaceholder: "ここにMegaリンクを入力してください",
-                buttonText: "移碼"
-            }
-        };
 
         // 显示个人资料页面（优化版：恢复所有手风琴 + 修改文案）
         function showProfile(language) {
             document.getElementById('languageSelector').style.display = 'none';
-            
+
+            // 多语言输入区内容
+            const inputLang = {
+                zh: {
+                    title: '请输入文字',
+                    btn: '移码',
+                    placeholder: '在此输入Mega链接...'
+                },
+                'zh-tw': {
+                    title: '請輸入文字',
+                    btn: '移碼',
+                    placeholder: '在此輸入Mega連結...'
+                },
+                en: {
+                    title: 'Please enter text',
+                    btn: 'Shift Code',
+                    placeholder: 'Enter Mega link here...'
+                },
+                ja: {
+                    title: '文字を入力してください',
+                    btn: '移碼',
+                    placeholder: 'ここにMegaリンクを入力...'
+                }
+            };
+
+            const langInput = inputLang[language] || inputLang.zh;
+
             const profileContainer = document.getElementById('profileContainer');
             profileContainer.style.display = 'flex';
             void profileContainer.offsetWidth;
             profileContainer.classList.add('show');
-            
-            // 获取当前语言的文本配置
-            const texts = languageTexts[language] || languageTexts.zh;
-            
-            // 上方：输入框区域
+
             document.getElementById('profileContent').innerHTML = `
                 <div class="text-center py-6 max-w-2xl mx-auto">
-                    <!-- 标题：白色 + 悬停轻微放大 + 光晕增强 -->
                     <h2 class="text-3xl font-bold mb-10 inline-block text-white" 
-                        style="text-shadow: 0 0 8px rgba(192, 132, 252, 0.8); 
-                               transition: all 0.4s ease;"
+                        style="text-shadow: 0 0 8px rgba(192, 132, 252, 0.8); transition: all 0.4s ease;"
                         onmouseover="this.style.transform='scale(1.08)'; this.style.textShadow='0 0 18px rgba(192, 132, 252, 1)'"
                         onmouseout="this.style.transform='scale(1)'; this.style.textShadow='0 0 8px rgba(192, 132, 252, 0.8)'">
-                        ${texts.inputTitle}
+                        ${langInput.title}
                     </h2>
-                    
                     <div class="max-w-lg mx-auto">
-                        <!-- 输入框：悬停阴影增强 -->
                         <input 
                             type="text" 
                             id="redeemCode" 
-                            placeholder="${texts.inputPlaceholder}" 
+                            placeholder="${langInput.placeholder}" 
                             class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6 shadow-lg transition-all duration-300"
                             autocomplete="off"
                             onmouseover="this.style.boxShadow='0 0 20px rgba(192, 132, 252, 0.6)'"
                             onmouseout="this.style.boxShadow='0 4px 15px rgba(0,0,0,0.2)'"
                         >
                         <br>
-                        <!-- 按钮：抑制放大到 1.05 倍 + 阴影增强 -->
                         <button 
                             onclick="submitRedeem()" 
                             class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl shadow-lg transition-all duration-500"
@@ -947,10 +941,9 @@
                             onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 25px rgba(192, 132, 252, 0.6)'"
                             onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 25px rgba(192, 132, 252, 0.3)'"
                         >
-                            ${texts.buttonText}
+                            ${langInput.btn}
                         </button>
                     </div>
-                    
                     <div id="redeemResult" class="mt-10 text-xl min-h-24 px-4">
                         <style>
                             #redeemResult p {
@@ -963,14 +956,9 @@
                         </style>
                     </div>
                 </div>
-
-                <!-- 恢复所有原版手风琴内容 -->
                 ${profileConfig.bio[language]}
-            `;     
-            // 更新返回按钮文本
+            `;
             updateBackButtonText(language);
-            
-            // 初始化手风琴功能（关键！让所有折叠框能点开）
             initAccordions();
         }
 
@@ -999,4 +987,35 @@
                     resultDiv.innerHTML = `
                         <div class="bg-green-900 bg-opacity-50 border-2 border-green-400 rounded-xl p-6">
                             <p class="text-2xl font-bold text-green-300 mb-4">输出：（true</p>
-                            <p class="text-lg leading-relaxed">${data
+                            <p class="text-lg leading-relaxed">${data.message.replace(/\\n/g, '<br>')}</p>
+                        </div>
+                    `;
+                } else {
+                    const fake = 'FAKE' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-900 bg-opacity-50 border-2 border-red-400 rounded-xl p-6">
+                            <p class="text-2xl font-bold text-red-300 mb-4">输出：（wrong</p>
+                            <p class="text-lg">${fake}</p>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<span style="color:#ff6b6b;">网络错误，请刷新重试，若持续出现该错误请通知作者</span>`;
+            }
+        }
+
+        // 将文本中的URL转换为可点击链接
+        function convertUrlsToLinks() {
+            const content = document.getElementById('profileContent');
+            const text = content.innerHTML;
+            
+            // 简单的URL检测正则表达式
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            
+            // 不需要再次转换，因为我们已经在bio中设置了链接
+            // 这段代码保留以备将来使用，如果你想动态添加文本而不是在配置中设置
+        }
+    </script>
+</body>
+</html>
+
