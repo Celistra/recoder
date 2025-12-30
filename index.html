@@ -966,39 +966,26 @@
             const codeInput = document.getElementById('redeemCode');
             const resultDiv = document.getElementById('redeemResult');
             const code = codeInput.value.trim();
-            
+        
             if (!code) {
                 resultDiv.innerHTML = `<span style="color:#ffb6c1;">请输入</span>`;
                 return;
             }
-
             resultDiv.innerHTML = `<span style="color:#a78bfa;">请稍候...</span>`;
-
             try {
                 const res = await fetch('/api/check', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({code: code.toUpperCase()})
                 });
-
                 const data = await res.json();
 
-                if (data.success) {
-                    resultDiv.innerHTML = `
-                        <div class="bg-green-900 bg-opacity-50 border-2 border-green-400 rounded-xl p-6">
-                            <p class="text-2xl font-bold text-green-300 mb-4">输出：（true</p>
-                            <p class="text-lg leading-relaxed">${data.message.replace(/\\n/g, '<br>')}</p>
-                        </div>
-                    `;
-                } else {
-                    const fake = 'FAKE' + Math.random().toString(36).substring(2, 8).toUpperCase();
-                    resultDiv.innerHTML = `
-                        <div class="bg-red-900 bg-opacity-50 border-2 border-red-400 rounded-xl p-6">
-                            <p class="text-2xl font-bold text-red-300 mb-4">输出：（wrong</p>
-                            <p class="text-lg">${fake}</p>
-                        </div>
-                    `;
-                }
+                // 直接显示后端返回的 message（不管成功失败都显示它）
+                resultDiv.innerHTML = `
+                    <div class="bg-purple-900 bg-opacity-50 border-2 border-purple-400 rounded-xl p-6">
+                        <p class="text-lg leading-relaxed">${data.message}</p>
+                    </div>
+                `;
             } catch (e) {
                 resultDiv.innerHTML = `<span style="color:#ff6b6b;">网络错误，请刷新重试，若持续出现该错误请通知作者</span>`;
             }
@@ -1018,5 +1005,6 @@
     </script>
 </body>
 </html>
+
 
 
