@@ -971,7 +971,7 @@
                 resultDiv.innerHTML = `<span style="color:#ffb6c1;">请输入内容</span>`;
                 return;
             }
-            resultDiv.innerHTML = `<span style="color:#a78bfa;">处理中，请稍候...</span>`;
+            resultDiv.innerHTML = `<span style="color:#a78bfa;">处理中...</span>`;
             try {
                 const res = await fetch('/api/check', {
                     method: 'POST',
@@ -980,9 +980,10 @@
                 });
                 const data = await res.json();
 
+                // 直接显示纯 message（链接或字符串），加可点击
                 resultDiv.innerHTML = `
                     <div class="bg-purple-900 bg-opacity-50 border-2 border-purple-400 rounded-xl p-6 text-center">
-                        <p class="text-lg leading-relaxed">${data.message}</p>
+                        <a href="${data.message}" target="_blank" style="color:#c084fc; word-break:break-all; text-decoration:none;">${data.message}</a>
                     </div>
                 `;
             } catch (e) {
