@@ -15,7 +15,7 @@ export default {
 
         const normalizedCode = code.trim().toUpperCase();
 
-        const value = await env.CODES.get(normalizedCode);
+        const value = await env["key-recoder"].get(normalizedCode);
 
         if (value) {
           const data = JSON.parse(value);
