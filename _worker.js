@@ -12,7 +12,6 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
-    // 只处理 /api/check POST 请求
     if (url.pathname === '/api/check' && request.method === 'POST') {
       try {
         const { code } = await request.json();
@@ -26,12 +25,11 @@ export default {
         const input = code.trim();
         const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
 
-        // ================ IP 限流逻辑（每天最多 250 次失败） ================
-        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        // IP 限流逻辑
+        const today = new Date().toISOString().slice(0, 10);
         const ipKey = `rate:${clientIP}:${today}`;
         const banKey = `ban:${clientIP}`;
 
-        // 检查是否被封禁（一周）
         const bannedUntil = await env.KEY_RECODER.get(banKey);
         if (bannedUntil) {
           const untilDate = new Date(bannedUntil);
@@ -42,29 +40,28 @@ export default {
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
           } else {
-            // 过期了，清除封禁
             await env.KEY_RECODER.delete(banKey);
           }
         }
 
-        // 记录今天的失败次数
         let failCount = parseInt((await env.KEY_RECODER.get(ipKey)) || '0');
 
-        // ================ 判断是否是 Mega 链接 ================
+        // 判断是否 Mega 链接
         const megaRegex = /^https?:\/\/mega\.nz\/file\/[a-zA-Z0-9]+#[a-zA-Z0-9_-]{43,}$/;
         const isMega = megaRegex.test(input);
 
-        const SECRET_SALT = "celistria123"; // 建议后面改成环境变量
+        const SECRET_SALT = "celistria123"; // 尽快改成 env.SECRET_SALT
 
         let message = '';
         let success = false;
 
         if (isMega) {
-          // ---------- 是 Mega 链接 ----------
-          // 提取原 key 部分（#后面的43+位字符串）
-          const originalHash = input.split('#')[1];
+          // 是 Mega 链接
+          const parts = input.split('#');
+          const originalPrefix = parts[0]; // https://mega.nz/file/oCV0kLbA
+          const originalHash = parts[1]; // NMZFFqz1l8RjQa3Jm5CCrb_sykT2d_CrpMibGdoq7qk
 
-          // 计算哈希作为 KV key
+          // 计算哈希
           const raw = originalHash + SECRET_SALT;
           const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
           const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -72,32 +69,36 @@ export default {
 
           const value = await env.KEY_RECODER.get(hashedKey);
 
-          let newHash;
+          let newLink;
           if (value) {
-            // KV 匹配成功 → 使用预设的新尾部
+            // 匹配 KV → 直接用预设 full link
             const data = JSON.parse(value);
-            newHash = data.newHash; // 你在 KV 里存的必须是新尾部字符串
+            newLink = data.content;
             success = true;
           } else {
-            // 不匹配 → 生成随机但有效的 Mega 尾部（43位 Base64-url 字符）
-            newHash = randomMegaHash();
+            // 不匹配 → 基于原尾部生成类似随机尾部
+            const newHash = generateSimilarHash(originalHash);
+            // 随机生成类似前缀（8位 Base64）
+            const randomPrefix = randomString(8, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789');
+            newLink = `https://mega.nz/file/${randomPrefix}#${newHash}`;
             failCount++;
           }
 
-          const newLink = `https://mega.nz/file/ABCDEFGH#${newHash}`;
-          message = `<strong style="color:#90ee90;">移码成功！新链接：</strong><br><br><a href="${newLink}" target="_blank" style="color:#c084fc; word-break:break-all;">${newLink}</a>`;
+          // 只输出纯链接（无提示）
+          message = newLink;
         } else {
-          // ---------- 不是 Mega 链接 → 完全随机输出，伪装成普通转换器 ----------
-          const randomOutput = 'OUTPUT-' + Math.random().toString(36).substring(2, 15).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
-          message = `<strong style="color:#a78bfa;">转换结果：</strong><br><br>${randomOutput}`;
+          // 不是 Mega → 基于输入生成类似随机字符串
+          const shuffled = shuffleAndModify(input);
+          // 只输出纯字符串（无提示）
+          message = shuffled;
         }
 
-        // 如果是 Mega 链接且失败，更新失败计数
+        // 更新失败计数（只限 Mega 失败）
         if (isMega && !success) {
-          await env.KEY_RECODER.put(ipKey, (failCount + 1).toString(), { expirationTtl: 86400 }); // 24小时过期
+          await env.KEY_RECODER.put(ipKey, (failCount + 1).toString(), { expirationTtl: 86400 });
 
           if (failCount + 1 >= 250) {
-            const banUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 一周后
+            const banUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
             await env.KEY_RECODER.put(banKey, banUntil.toISOString(), { expirationTtl: 7 * 24 * 3600 });
           }
         }
@@ -115,16 +116,57 @@ export default {
       }
     }
 
-    // 其他请求放行静态资源
     return env.ASSETS.fetch(request);
   }
 };
 
-// 生成随机但符合 Mega 格式的尾部（43位 Base64-url 安全字符）
-function randomMegaHash() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
+// 生成类似尾部：乱序 + 随机增减1-3字符 + 随机大小写
+function generateSimilarHash(original) {
+  let chars = original.split('');
+  // 乱序
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+  // 随机增减1-3字符（从原字符池随机取）
+  const change = Math.floor(Math.random() * 3) + 1;
+  if (Math.random() < 0.5) {
+    // 增
+    for (let i = 0; i < change; i++) {
+      const randChar = original[Math.floor(Math.random() * original.length)];
+      chars.splice(Math.floor(Math.random() * chars.length), 0, randChar);
+    }
+  } else {
+    // 减（如果长度够）
+    if (chars.length > change) {
+      chars = chars.slice(0, chars.length - change);
+    }
+  }
+  // 随机大小写
+  chars = chars.map(c => Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase());
+  return chars.join('');
+}
+
+// 基于输入乱序 + 加随机后缀 + 随机大小写
+function shuffleAndModify(input) {
+  let chars = input.split('');
+  // 乱序
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+  // 加随机3-6位后缀
+  const suffix = randomString(Math.floor(Math.random() * 4) + 3, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-');
+  chars.push(...suffix.split(''));
+  // 随机大小写
+  chars = chars.map(c => Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase());
+  return chars.join('');
+}
+
+// 生成随机字符串
+function randomString(length, chars) {
   let result = '';
-  for (let i = 0; i < 43; i++) {
+  for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
