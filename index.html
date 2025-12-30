@@ -1151,30 +1151,36 @@ However, if you are visiting here for the first time, before proceeding to our U
             
             // 上方：输入框区域（只改文案）
             document.getElementById('profileContent').innerHTML = `
-                <div class="text-center py-5"> 
-                    <h2 class="text-3xl font-bold mb-10" style="color: var(--primary-color);">请输入链接</h2>
+                <div class="text-center py-6 max-w-2xl mx-auto"> <!-- 缩小整体区域：py-8→py-6, max-w-md→max-w-2xl -->
+                    <h2 class="text-3xl font-bold mb-10 text-var(--primary-color) hover:transform hover:translate-x-2 transition-all duration-300"
+                        style="text-shadow: 0 0 8px rgba(192, 132, 252, 0.8);">
+                        请输入链接
+                    </h2>
                     
-                    <div class="max-w-sm mx-auto">  
+                    <div class="max-w-lg mx-auto"> <!-- 进一步收紧输入框宽度 -->
                         <input 
                             type="text" 
                             id="redeemCode" 
-                            placeholder=""
-                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6 shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105"
+                            placeholder="" 
+                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6 shadow-lg hover:transform hover:translate-x-1 transition-all duration-300"
                             autocomplete="off"
                         >
                         <br>
                         <button 
                             onclick="submitRedeem()" 
-                            class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-110"
+                            class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl shadow-lg hover:transform hover:scale-105 hover:translate-x-1 transition-all duration-500"
+                            style="text-shadow: 0 0 10px rgba(192, 132, 252, 0.9);"
                         >
                             移码
                         </button>
                     </div>
                     
-                    <div id="redeemResult" class="mt-10 text-xl min-h-24"></div>
+                    <div id="redeemResult" class="mt-10 text-xl min-h-24 px-4">
+                        <!-- 结果文字也会自动继承原 p 标签的悬停动效 -->
+                    </div>
                 </div>
 
-                <!-- 下面恢复所有原版手风琴内容 -->
+                <!-- 恢复所有原版手风琴内容 -->
                 ${profileConfig.bio[language]}
             `;
             
