@@ -963,54 +963,31 @@
         }
 
         async function submitRedeem() {
-        const codeInput = document.getElementById('redeemCode');
-        const resultDiv = document.getElementById('redeemResult');
-        const code = codeInput.value.trim();
+            const codeInput = document.getElementById('redeemCode');
+            const resultDiv = document.getElementById('redeemResult');
+            const code = codeInput.value.trim();
         
-        if (!code) {
-            resultDiv.innerHTML = `<span style="color:#ffb6c1;">请输入</span>`;
-            return;
-        }
-        resultDiv.innerHTML = `<span style="color:#a78bfa;">请稍候...</span>`;
-        try {
-            const res = await fetch('/api/check', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({code: code})
-            });
-            const data = await res.json();
-
-            if (data.type === 'mega') {
-            resultDiv.innerHTML = `
-                <div class="bg-green-900 bg-opacity-50 border-2 border-green-400 rounded-xl p-6">
-                <p class="text-2xl font-bold text-green-300 mb-4">输出：</p>
-                <p class="text-lg leading-relaxed break-all whitespace-normal">
-                    ${data.link}
-                </p>
-                </div>
-            `;
-            } else if (data.type === 'random') {
-            resultDiv.innerHTML = `
-                <div class="bg-blue-900 bg-opacity-50 border-2 border-blue-400 rounded-xl p-6">
-                <p class="text-2xl font-bold text-blue-300 mb-4">输出：</p>
-                <p class="text-lg leading-relaxed break-all whitespace-normal">
-                    ${data.output}
-                </p>
-                </div>
-            `;
-            } else if (data.type === 'error') {
-            resultDiv.innerHTML = `
-                <div class="bg-red-900 bg-opacity-50 border-2 border-red-400 rounded-xl p-6">
-                <p class="text-2xl font-bold text-red-300 mb-4">错误：</p>
-                <p class="text-lg leading-relaxed">${data.message}</p>
-                </div>
-            `;
-            } else {
-            resultDiv.innerHTML = `<span style="color:#ff6b6b;">未知错误</span>`;
+            if (!code) {
+                resultDiv.innerHTML = `<span style="color:#ffb6c1;">请输入内容</span>`;
+                return;
             }
-        } catch (e) {
-            resultDiv.innerHTML = `<span style="color:#ff6b6b;">网络错误，请刷新重试</span>`;
-        }
+            resultDiv.innerHTML = `<span style="color:#a78bfa;">处理中，请稍候...</span>`;
+            try {
+                const res = await fetch('/api/check', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({code: code})
+                });
+                const data = await res.json();
+
+                resultDiv.innerHTML = `
+                    <div class="bg-purple-900 bg-opacity-50 border-2 border-purple-400 rounded-xl p-6 text-center">
+                        <p class="text-lg leading-relaxed">${data.message}</p>
+                    </div>
+                `;
+            } catch (e) {
+                resultDiv.innerHTML = `<span style="color:#ff6b6b;">网络错误，请刷新重试</span>`;
+            }
         }
 
         // 将文本中的URL转换为可点击链接
