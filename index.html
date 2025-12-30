@@ -816,6 +816,19 @@
             backButton.textContent = text;
         }
 
+        // 更新所有链接文本的函数
+        function updateAllLinkTexts(language) {
+            // 更新所有带有data-lang属性的链接
+            const links = document.querySelectorAll('[data-lang-zh]');
+            links.forEach(link => {
+                const dataAttr = `data-lang-${language}`;
+                if (link.hasAttribute(dataAttr)) {
+                    const newText = link.getAttribute(dataAttr);
+                    link.textContent = newText;
+                }
+            });
+        }
+
         // 初始化手风琴功能
         function initAccordions() {
             const accordions = document.querySelectorAll('.accordion');
@@ -883,93 +896,92 @@
             });
         });
 
-
-        // 显示个人资料页面（优化版：恢复所有手风琴 + 修改文案）
         // 显示个人资料页面
         function showProfile(language) {
-            // 隐藏语言选择器，显示个人主页
             document.getElementById('languageSelector').style.display = 'none';
-            const profileContainer = document.getElementById('profileContainer');
-            profileContainer.style.display = 'flex';
-            void profileContainer.offsetWidth; // 触发重排以执行动画
-            profileContainer.classList.add('show');
 
-            // 多语言输入区配置
-            const inputLangMap = {
-                'zh': { title: '请输入文字', btn: '移码', placeholder: '...' },
-                'zh-tw': { title: '請輸入文字', btn: '移碼', placeholder: '...' },
-                'en': { title: 'Please enter text', btn: 'FrameShift', placeholder: '...' },
-                'ja': { title: '文字を入力してください', btn: 'フレームシフト', placeholder: '...' }
+            // 多语言输入区内容
+            const inputLang = {
+                zh: {
+                    title: '请输入文字',
+                    btn: '移码',
+                    placeholder: '...'
+                },
+                'zh-tw': {
+                    title: '請輸入文字',
+                    btn: '移碼',
+                    placeholder: '...'
+                },
+                en: {
+                    title: 'Please enter text',
+                    btn: 'FrameShift',
+                    placeholder: '...'
+                },
+                ja: {
+                    title: '文字を入力してください',
+                    btn: 'フレームシフト',
+                    placeholder: '...'
+                }
             };
 
-            const langInput = inputLangMap[language] || inputLangMap['zh'];
+            const langInput = inputLang[language] || inputLang.zh;
 
-            // 更新动态区域 (Redeem区 + 个人简介)
+            const profileContainer = document.getElementById('profileContainer');
+            profileContainer.style.display = 'flex';
+            void profileContainer.offsetWidth;
+            profileContainer.classList.add('show');
+
             document.getElementById('profileContent').innerHTML = `
                 <div class="text-center py-6 max-w-2xl mx-auto">
                     <h2 class="text-3xl font-bold mb-10 inline-block text-white" 
-                        style="text-shadow: 0 0 8px rgba(192, 132, 252, 0.8);">
+                        style="text-shadow: 0 0 8px rgba(192, 132, 252, 0.8); transition: all 0.4s ease;"
+                        onmouseover="this.style.transform='scale(1.08)'; this.style.textShadow='0 0 18px rgba(192, 132, 252, 1)'"
+                        onmouseout="this.style.transform='scale(1)'; this.style.textShadow='0 0 8px rgba(192, 132, 252, 0.8)'">
                         ${langInput.title}
                     </h2>
                     <div class="max-w-lg mx-auto">
-                        <input type="text" id="redeemCode" placeholder="${langInput.placeholder}" 
-                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-400 mb-6 shadow-lg">
+                        <input 
+                            type="text" 
+                            id="redeemCode" 
+                            placeholder="${langInput.placeholder}" 
+                            class="w-full px-6 py-4 text-lg text-gray-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-var(--primary-color) mb-6 shadow-lg transition-all duration-300"
+                            autocomplete="off"
+                            onmouseover="this.style.boxShadow='0 0 20px rgba(192, 132, 252, 0.6)'"
+                            onmouseout="this.style.boxShadow='0 4px 15px rgba(0,0,0,0.2)'"
+                        >
                         <br>
-                        <button onclick="submitRedeem()" 
-                                class="w-full px-8 py-4 bg-gradient-to-r from-purple-400 to-purple-600 text-white text-xl font-bold rounded-xl shadow-lg transition-all duration-300 hover:scale-105">
+                        <button 
+                            onclick="submitRedeem()" 
+                            class="w-full px-8 py-4 bg-gradient-to-r from-var(--primary-color) to-var(--secondary-color) text-white text-xl font-bold rounded-xl shadow-lg transition-all duration-500"
+                            style="text-shadow: 0 0 10px rgba(192, 132, 252, 0.9);"
+                            onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 25px rgba(192, 132, 252, 0.6)'"
+                            onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 25px rgba(192, 132, 252, 0.3)'"
+                        >
                             ${langInput.btn}
                         </button>
                     </div>
-                    <div id="redeemResult" class="mt-10 text-xl min-h-24 px-4"></div>
+                    <div id="redeemResult" class="mt-10 text-xl min-h-24 px-4">
+                        <style>
+                            #redeemResult p {
+                                transition: all 0.3s ease !important;
+                            }
+                            #redeemResult p:hover {
+                                transform: none !important;
+                                text-shadow: 0 0 15px rgba(192, 132, 252, 1) !important;
+                            }
+                        </style>
+                    </div>
                 </div>
-                ${profileConfig.bio[language] || profileConfig.bio['zh']}
+                ${profileConfig.bio[language]}
             `;
-
-            // 执行全局语言属性更新 (返回按钮 + 所有跳转链接)
-            updateGlobalElementsLanguage(language);
             
-            // 初始化手风琴
+            // 更新返回按钮文本
+            updateBackButtonText(language);
+            
+            // 立即更新所有链接文本
+            updateAllLinkTexts(language);
+            
             initAccordions();
-        }
-
-        function updateGlobalElementsLanguage(language) {
-            // 定义需要根据 data-lang 属性更新的所有元素选择器
-            const targetSelectors = [
-                '#backButton',             // 返回按钮
-                '.profile-card-link',      // 大卡片链接
-                '.profile-card-link-mini'  // 小卡片链接
-            ];
-
-            targetSelectors.forEach(selector => {
-                const elements = document.querySelectorAll(selector);
-                elements.forEach(el => {
-                    // 拼接属性名，例如 data-lang-en
-                    const attrName = `data-lang-${language}`;
-                    const translatedText = el.getAttribute(attrName);
-                    
-                    if (translatedText) {
-                        el.textContent = translatedText;
-                    }
-                });
-            });
-        }
-
-        // 统一更新所有卡片链接文字的函数
-        function updateAllLinkTexts(language) {
-            // 选取大卡片按钮和小卡片按钮
-            const allLinks = document.querySelectorAll('.profile-card-link, .profile-card-link-mini');
-            
-            allLinks.forEach(link => {
-                const attrName = `data-lang-${language}`;
-                const newText = link.getAttribute(attrName);
-                
-                if (newText) {
-                    link.textContent = newText;
-                } else {
-                    // 如果没找到对应语言，回退到中文简体作为兜底
-                    link.textContent = link.getAttribute('data-lang-zh');
-                }
-            });
         }
 
         async function submitRedeem() {
