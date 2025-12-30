@@ -980,17 +980,22 @@
                 });
                 const data = await res.json();
 
-                // 直接显示纯 message（链接或字符串），加可点击
+                let display = data.result;
+                // 如果看起来是 Mega 链接，自动转成可点击
+                if (display.startsWith('https://mega.nz/file/')) {
+                    display = `<a href="${display}" target="_blank" style="color:#c084fc; word-break:break-all;">${display}</a>`;
+                }
+
                 resultDiv.innerHTML = `
                     <div class="bg-purple-900 bg-opacity-50 border-2 border-purple-400 rounded-xl p-6 text-center">
-                        <a href="${data.message}" target="_blank" style="color:#c084fc; word-break:break-all; text-decoration:none;">${data.message}</a>
+                        <p class="text-lg leading-relaxed">${display}</p>
                     </div>
                 `;
             } catch (e) {
                 resultDiv.innerHTML = `<span style="color:#ff6b6b;">网络错误，请刷新重试</span>`;
             }
         }
-
+        
         // 将文本中的URL转换为可点击链接
         function convertUrlsToLinks() {
             const content = document.getElementById('profileContent');
