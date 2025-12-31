@@ -549,7 +549,7 @@
             <img src="Cel.jpg" alt="Celistria" class="profile-card-avatar">
             <div class="profile-card-info">
                 <h2 class="profile-card-name">Celistria</h2>
-                <a href="https://app.unifans.io/c/celistria" target="_blank" class="profile-card-link" data-lang-zh="点击跳转至Celistria的Unifans" data-lang-zh-tw="點擊跳轉至Celistria的Unifans" data-lang-en="Click to visit Celistria's Unifans" data-lang-ja="CelistriaのUnifansを訪問するにはクリック">点击跳转至Celistria的Unifans</a>
+                <a href="https://app.unifans.io/c/celistria" target="_blank" class="profile-card-link" data-link="celistria">点击跳转至Celistria的Unifans</a>
             </div>
         </div>
         <div class="profile-card-mini-container">
@@ -557,14 +557,14 @@
                 <img src="lun.jpg" alt="Lunastria" class="profile-card-avatar-mini">
                 <div class="profile-card-info-mini">
                     <h2 class="profile-card-name-mini">Lunastria</h2>
-                    <a href="https://app.unifans.io/c/lunastria" target="_blank" class="profile-card-link-mini" data-lang-zh="点击跳转至Lunastria的Unifans" data-lang-zh-tw="點擊跳轉至Lunastria的Unifans" data-lang-en="Click to visit Lunastria's Unifans" data-lang-ja="LunastriaのUnifansを訪問するにはクリック">点击跳转至Lunastria的Unifans</a>
+                    <a href="https://app.unifans.io/c/lunastria" target="_blank" class="profile-card-link-mini" data-link="lunastria" >点击跳转至Lunastria的Unifans</a>
                 </div>
             </div>
             <div class="profile-card-mini">
                 <img src="aet.jpg" alt="Aetheria" class="profile-card-avatar-mini">
                 <div class="profile-card-info-mini">
                     <h2 class="profile-card-name-mini">Aetheria</h2>
-                    <a href="https://app.unifans.io/c/aetheria" target="_blank" class="profile-card-link-mini" data-lang-zh="点击跳转至Aetheria的Unifans" data-lang-zh-tw="點擊跳轉至Aetheria的Unifans" data-lang-en="Click to visit Aetheria's Unifans" data-lang-ja="AetheriaのUnifansを訪問するにはクリック">点击跳转至Aetheria的Unifans</a>
+                    <a href="https://app.unifans.io/c/aetheria" target="_blank" class="profile-card-link-mini" data-link="aetheria">点击跳转至Aetheria的Unifans</a>
                 </div>
             </div>
         </div>
@@ -572,14 +572,14 @@
             <img src="kly.jpg" alt="Klyris" class="profile-card-avatar">
             <div class="profile-card-info">
                 <h2 class="profile-card-name">Klyris</h2>
-                <a href="https://app.unifans.io/c/klyris" target="_blank" class="profile-card-link" data-lang-zh="点击跳转至Klyris的Unifans" data-lang-zh-tw="點擊跳轉至Klyris的Unifans" data-lang-en="Click to visit Klyris' Unifans" data-lang-ja="KlyrisのUnifansを訪問するにはクリック">点击跳转至Klyris的Unifans</a>
+                <a href="https://app.unifans.io/c/klyris" target="_blank" class="profile-card-link" data-link="klyris">点击跳转至Klyris的Unifans</a>
             </div>
         </div>
         <div class="profile-card">
             <img src="van.jpg" alt="Vanity" class="profile-card-avatar">
             <div class="profile-card-info">
                 <h2 class="profile-card-name">Vanity</h2>
-                <a href="https://app.unifans.io/c/vanity" target="_blank" class="profile-card-link" data-lang-zh="点击跳转至Vanity的Unifans" data-lang-zh-tw="點擊跳轉至Vanity的Unifans" data-lang-en="Click to visit Vanity's Unifans" data-lang-ja="VanityのUnifansを訪問するにはクリック">点击跳转至Vanity的Unifans</a>
+                <a href="https://app.unifans.io/c/vanity" target="_blank" class="profile-card-link" data-link="vanity">点击跳转至Vanity的Unifans</a>
             </div>
         </div>
     </div>
@@ -798,7 +798,41 @@
                     </div>
                     
                 `
+            },
+
+            // 👇 新增：跳转链接的文本配置
+            links: {
+
+                zh: {
+                    celistria: "访问 Celistria 的 Unifans",
+                    lunastria: "访问 Lunastria 的 Unifans",
+                    aetheria: "访问 Aetheria 的 Unifans",
+                    klyris: "访问 Klyris 的 Unifans",
+                    vanity: "访问 Vanity 的 Unifans"
+                },
+                en: {
+                    celistria: "Visit Celistria's Unifans",
+                    lunastria: "Visit Lunastria's Unifans",
+                    aetheria: "Visit Aetheria's Unifans",
+                    klyris: "Visit Klyris' Unifans",
+                    vanity: "Visit Vanity's Unifans"
+                },
+                ja: {
+                    celistria: "CelistriaのUnifansを訪問",
+                    lunastria: "LunastriaのUnifansを訪問",
+                    aetheria: "AetheriaのUnifansを訪問",
+                    klyris: "KlyrisのUnifansを訪問",
+                    vanity: "VanityのUnifansを訪問"
+                },
+                "zh-tw": {
+                    celistria: "訪問 Celistria 的 Unifans",
+                    lunastria: "訪問 Lunastria 的 Unifans",
+                    aetheria: "訪問 Aetheria 的 Unifans",
+                    klyris: "訪問 Klyris 的 Unifans",
+                    vanity: "訪問 Vanity 的 Unifans"
+                }
             }
+
         };
 
         // 返回按钮功能
@@ -816,15 +850,12 @@
             backButton.textContent = text;
         }
 
-        // 更新所有链接文本的函数
         function updateAllLinkTexts(language) {
-            // 更新所有带有data-lang属性的链接
-            const links = document.querySelectorAll('[data-lang-zh]');
-            links.forEach(link => {
-                const dataAttr = `data-lang-${language}`;
-                if (link.hasAttribute(dataAttr)) {
-                    const newText = link.getAttribute(dataAttr);
-                    link.textContent = newText;
+            // 更新所有链接文本
+            document.querySelectorAll('[data-link]').forEach(link => {
+                const linkKey = link.getAttribute('data-link');
+                if (profileConfig.links && profileConfig.links[language] && profileConfig.links[language][linkKey]) {
+                    link.textContent = profileConfig.links[language][linkKey];
                 }
             });
         }
