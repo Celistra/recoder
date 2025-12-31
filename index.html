@@ -848,7 +848,6 @@
                 `
             },
 
-            // 👇 新增：跳转链接的文本配置
             links: {
 
                 zh: {
@@ -878,6 +877,29 @@
                     aetheria: "訪問 Aetheria 的 Unifans",
                     klyris: "訪問 Klyris 的 Unifans",
                     vanity: "訪問 Vanity 的 Unifans"
+                }
+            },
+
+            errorMessages: {
+                zh: {
+                    empty: "请输入内容",
+                    processing: "处理中...",
+                    networkError: "网络错误，请刷新重试"
+                },
+                en: {
+                    empty: "Please enter content",
+                    processing: "Processing...",
+                    networkError: "Network error, please refresh and retry"
+                },
+                "zh-tw": {
+                    empty: "請輸入內容",
+                    processing: "處理中...",
+                    networkError: "網路錯誤，請重新整理重試"
+                },
+                ja: {
+                    empty: "内容を入力してください",
+                    processing: "処理中...",
+                    networkError: "ネットワークエラー、ページを更新して再試行してください"
                 }
             }
 
@@ -978,6 +1000,7 @@
         // 显示个人资料页面
         function showProfile(language) {
             document.getElementById('languageSelector').style.display = 'none';
+            document.body.setAttribute('data-current-language', language);
 
             // 多语言输入区内容
             const inputLang = {
@@ -1067,12 +1090,15 @@
             const codeInput = document.getElementById('redeemCode');
             const resultDiv = document.getElementById('redeemResult');
             const code = codeInput.value.trim();
-        
+            const currentLanguage = document.body.getAttribute('data-current-language') || 'zh';
+            const errors = profileConfig.errorMessages[currentLanguage] || profileConfig.errorMessages.zh;
+
+
             if (!code) {
-                resultDiv.innerHTML = `<span style="color:#ffb6c1;">请输入内容</span>`;
+                resultDiv.innerHTML = `<span style="color:#ffb6c1;">${errors.empty}</span>`;
                 return;
             }
-            resultDiv.innerHTML = `<span style="color:#a78bfa;">处理中...</span>`;
+            resultDiv.innerHTML = `<span style="color:#a78bfa;">${errors.processing}</span>`;
             try {
                 const res = await fetch('/api/check', {
                     method: 'POST',
@@ -1093,7 +1119,7 @@
                     </div>
                 `;
             } catch (e) {
-                resultDiv.innerHTML = `<span style="color:#ff6b6b;">网络错误，请刷新重试</span>`;
+                resultDiv.innerHTML = `<span style="color:#ff6b6b;">${errors.networkError}</span>`;
             }
         }
         
